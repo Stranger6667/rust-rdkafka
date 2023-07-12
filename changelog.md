@@ -4,7 +4,22 @@ See also the [rdkafka-sys changelog](rdkafka-sys/changelog.md).
 
 ## Unreleased
 
+## 0.33.2 (2023-07-06)
+
+* **Breaking change.** Change signature for `seek_partitions`. Following
+  librdkafka, individual partition errors should be reported in the per-partition
+  `error` field of `TopicPartitionList` elements.
+
+## 0.33.0 (2023-06-30)
+
+* Add interface to specify custom partitioners by extending `ProducerContext`
+  trait with capability to return optional custom partitioner.
+* Add `seek_partitions` to consumer.
+
+## 0.32.1 (2023-06-09)
+
 * Add support for the cluster mock API.
+* Expose assignment_lost method on the consumer.
 
 ## 0.31.0 (2023-05-17)
 

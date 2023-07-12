@@ -350,6 +350,25 @@ where
         Ok(())
     }
 
+    fn seek_partitions<T: Into<Timeout>>(
+        &self,
+        topic_partition_list: TopicPartitionList,
+        timeout: T,
+    ) -> KafkaResult<TopicPartitionList> {
+        let ret = unsafe {
+            RDKafkaError::from_ptr(rdsys::rd_kafka_seek_partitions(
+                self.client.native_ptr(),
+                topic_partition_list.ptr(),
+                timeout.into().as_millis(),
+            ))
+        };
+        if ret.is_error() {
+            let error = ret.name();
+            return Err(KafkaError::Seek(error));
+        }
+        Ok(topic_partition_list)
+    }
+
     fn commit(
         &self,
         topic_partition_list: &TopicPartitionList,
@@ -441,6 +460,10 @@ where
         } else {
             Ok(unsafe { TopicPartitionList::from_ptr(tpl_ptr) })
         }
+    }
+
+    fn assignment_lost(&self) -> bool {
+        unsafe { rdsys::rd_kafka_assignment_lost(self.client.native_ptr()) == 1 }
     }
 
     fn committed<T: Into<Timeout>>(&self, timeout: T) -> KafkaResult<TopicPartitionList> {

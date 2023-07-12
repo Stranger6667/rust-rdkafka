@@ -257,6 +257,18 @@ where
         timeout: T,
     ) -> KafkaResult<()>;
 
+    /// Seeks consumer for partitions in `topic_partition_list` to the per-partition offset
+    /// in the `offset` field of `TopicPartitionListElem`.
+    /// The offset can be either absolute (>= 0) or a logical offset.
+    /// Seek should only be performed on already assigned/consumed partitions.
+    /// Individual partition errors are reported in the per-partition `error` field of
+    /// `TopicPartitionListElem`.
+    fn seek_partitions<T: Into<Timeout>>(
+        &self,
+        topic_partition_list: TopicPartitionList,
+        timeout: T,
+    ) -> KafkaResult<TopicPartitionList>;
+
     /// Commits the offset of the specified message. The commit can be sync
     /// (blocking), or async. Notice that when a specific offset is committed,
     /// all the previous offsets are considered committed as well. Use this
@@ -305,6 +317,21 @@ where
 
     /// Returns the current partition assignment.
     fn assignment(&self) -> KafkaResult<TopicPartitionList>;
+
+    /// Check whether the consumer considers the current assignment to have been lost
+    /// involuntarily.
+    ///
+    /// This method is only applicable for use with a high level subscribing consumer. Assignments
+    /// are revoked immediately when determined to have been lost, so this method is only useful
+    /// when reacting to a rebalance or from within a rebalance_cb. Partitions
+    /// that have been lost may already be owned by other members in the group and therefore
+    /// commiting offsets, for example, may fail.
+    ///
+    /// Calling rd_kafka_assign(), rd_kafka_incremental_assign() or rd_kafka_incremental_unassign()
+    /// resets this flag.
+    ///
+    /// Returns true if the current partition assignment is considered lost, false otherwise.
+    fn assignment_lost(&self) -> bool;
 
     /// Retrieves the committed offsets for topics and partitions.
     fn committed<T>(&self, timeout: T) -> KafkaResult<TopicPartitionList>

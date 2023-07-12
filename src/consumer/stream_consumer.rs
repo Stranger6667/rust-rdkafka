@@ -396,6 +396,10 @@ where
         self.base.incremental_unassign(assignment)
     }
 
+    fn assignment_lost(&self) -> bool {
+        self.base.assignment_lost()
+    }
+
     fn seek<T: Into<Timeout>>(
         &self,
         topic: &str,
@@ -404,6 +408,14 @@ where
         timeout: T,
     ) -> KafkaResult<()> {
         self.base.seek(topic, partition, offset, timeout)
+    }
+
+    fn seek_partitions<T: Into<Timeout>>(
+        &self,
+        topic_partition_list: TopicPartitionList,
+        timeout: T,
+    ) -> KafkaResult<TopicPartitionList> {
+        self.base.seek_partitions(topic_partition_list, timeout)
     }
 
     fn commit(
